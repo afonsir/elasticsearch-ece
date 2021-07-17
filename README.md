@@ -287,3 +287,171 @@ sudo ./bin/kibana --allow-root
 | data-3   | data-3    | zone=3, temp=warm | data         | 2g       |
 +----------+-----------+-------------------+--------------+----------+
 ```
+
+## Creating Certificates
+
+- Create a Certificate Authority file:
+
+```bash
+# elasticsearch/config/certs
+
+/home/elastic/elasticsearch/bin/elasticsearch-certutil ca \
+  --out config/certs/ca \
+  --pass elastic_ca
+```
+
+- Create a certificate for master node:
+
+```bash
+# ex. Master 1
+
+/home/elastic/elasticsearch/bin/elasticsearch-certutil cert \
+  --ca config/certs/ca \
+  --ca-pass elastic_ca \
+  --name master-1 \
+  --dns <MASTER_DNS_ADDRESS> \
+  --ip <MASTER_PRIVATE_IP_ADDRESS> \
+  --out config/certs/master-1 \
+  --pass elastic_master_1
+```
+
+- Create certificates for data nodes:
+
+```bash
+# ex. Data 1
+
+/home/elastic/elasticsearch/bin/elasticsearch-certutil cert \
+  --ca config/certs/ca \
+  --ca-pass elastic_ca \
+  --name data-1 \
+  --dns <DATA_1_DNS_ADDRESS> \
+  --ip <DATA_1_PRIVATE_IP_ADDRESS> \
+  --out config/certs/data-1 \
+  --pass elastic_data_1
+```
+
+- Move certificates to respective nodes:
+
+```bash
+chown <YOUR_USER>:<YOUR_USER> [master-1, data-1, data-2, node-1]
+
+scp [master-1, data-1, data-2, node-1] <NODE_PRIVATE_IP_ADDRESS>:/tmp
+
+chown elastic:elastic [master-1, data-1, data-2, node-1]
+```
+
+## Encrypt the Transport Network
+
+- Change certificate permissions file:
+
+```bash
+chmod 640 [master-1, data-1, data-2, node-1]
+```
+
+### Node Configurations:
+
+- Elasticsearch config:
+
+```yml
+# elasticsearch/config/elasticsearch.yml
+
+# --- X-Pack ---
+xpack.security.enabled: true
+xpack.security.transport.ssl.enabled: true
+xpack.security.transport.ssl.verification_mode: full # or certificate
+xpack.security.transport.ssl.keystore.path: certs/[master-1, data-1, data-2, node-1] # certificate name
+xpack.security.transport.ssl.truststore.path: certs/[master-1, data-1, data-2, node-1] # certificate name
+```
+
+- Add pass-phrase to Elasticsearch keystore:
+
+```bash
+# keystore
+
+echo "CERTIFICATE_PASSWORD_HERE" | \
+/home/elastic/elasticsearch/bin/elasticsearch-keystore add --stdin \
+  xpack.security.transport.ssl.keystore.secure_password
+
+# truststore
+
+echo "CERTIFICATE_PASSWORD_HERE" | \
+/home/elastic/elasticsearch/bin/elasticsearch-keystore add --stdin \
+  xpack.security.transport.ssl.truststore.secure_password
+```
+
+- Restart Elasticsearch:
+
+```bash
+pkill --pidfile pid; ./bin/elasticsearch --daemonize --pidfile pid
+```
+
+- Kibana config:
+
+```yml
+# kibana/config/kibana.yml
+
+elasticsearch.username: "kibana"
+elasticsearch.password: "<KIBANA_USER_PASSWORD>"
+```
+
+- Restart Kibana.
+
+## Encrypt the Client Network
+
+**IMPORTANT**: In a production environment, is highly recommend to use a global signed certificate, instead of a self-signed certificate.
+
+### Node Configurations:
+
+- Elasticsearch config:
+
+```yml
+# elasticsearch/config/elasticsearch.yml
+
+# --- X-Pack ---
+xpack.security.http.ssl.enabled: true
+xpack.security.http.ssl.keystore.path: certs/[master-1, data-1, data-2, node-1]
+xpack.security.http.ssl.truststore.path: certs/[master-1, data-1, data-2, node-1]
+```
+
+- Add pass-phrase to Elasticsearch keystore:
+
+```bash
+# keystore
+
+echo "CERTIFICATE_PASSWORD_HERE" | \
+/home/elastic/elasticsearch/bin/elasticsearch-keystore add --stdin \
+  xpack.security.http.ssl.keystore.secure_password
+
+# truststore
+
+echo "CERTIFICATE_PASSWORD_HERE" | \
+/home/elastic/elasticsearch/bin/elasticsearch-keystore add --stdin \
+  xpack.security.http.ssl.truststore.secure_password
+```
+
+- Restart Elasticsearch:
+
+```bash
+pkill --pidfile pid; ./bin/elasticsearch --daemonize --pidfile pid
+```
+
+- Kibana config:
+
+```yml
+# kibana/config/kibana.yml
+
+elasticsearch.hosts: [ "https://localhost:9200" ]
+elasticsearch.ssl.verificationMode: none
+```
+
+- Restart Kibana.
+
+## Define Elasticsearch user passwords
+
+- Redefine default passwords:
+
+```bash
+# elastic, apm_system, kibana, logstash_system, beats_system, remote_monitoring_user
+
+/home/elastic/elasticsearch/bin/elasticsearch-setup-passwords interactive
+```
