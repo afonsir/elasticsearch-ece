@@ -489,3 +489,22 @@ POST _security/user/new_user
 
 GET _security/user/new_user
 ```
+
+## Create Index
+
+- Create an index:
+
+```json
+PUT index-name
+{
+  "aliases": {
+    // ...
+  },
+  "mappings": {
+    // ...
+  },
+  "settings": {
+    // ...
+  }
+}
+```
