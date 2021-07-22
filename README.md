@@ -580,3 +580,47 @@ DELETE sample-1/_doc/xCh2y3oBg4UTC8GCpQ3J
 ```json
 DELETE sample-1
 ```
+
+## Data Samples
+
+- Accounts data:
+
+```bash
+curl --remote-name https://raw.githubusercontent.com/linuxacademy/content-elastic-certification/master/sample_data/accounts.json
+```
+
+- Logs data:
+
+```bash
+curl --remote-name https://raw.githubusercontent.com/linuxacademy/content-elastic-certification/master/sample_data/logs.json
+```
+
+- Shakespeare data:
+
+```bash
+curl --remote-name https://raw.githubusercontent.com/linuxacademy/content-elastic-certification/master/sample_data/shakespeare.json
+```
+
+## Bulk API
+
+- Importing **[ accounts, shakespeare, logs ]** data:
+
+```bash
+curl \
+  --user elastic \
+  --insecure \
+  --header 'Content-Type: application/x-ndjson' \
+  --request POST \
+  'https://localhost:9200/[ accounts, shakespeare, logs ]/_bulk?pretty' \
+  --data-binary @[ accounts, shakespeare, logs ].json > [ accounts, shakespeare, logs ]-bulk.json
+```
+
+- Refresh manually the indices:
+
+```bash
+POST /bank/_refresh
+
+POST /shakespeare/_refresh
+
+POST /logs/_refresh
+```
