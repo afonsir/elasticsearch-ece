@@ -508,3 +508,75 @@ PUT index-name
   }
 }
 ```
+
+## CRUD Operations:
+
+- Create **sample-1** index:
+
+```json
+PUT sample-1
+```
+
+- List the documents:
+
+```json
+GET sample-1/_search
+```
+
+- Create a document:
+
+```json
+POST sample-1/_doc
+{
+  "firstname": "John",
+  "lastname": "Doe"
+}
+```
+
+- Show document with metadata by its ID:
+
+```json
+GET sample-1/_doc/xCh2y3oBg4UTC8GCpQ3J
+```
+
+- Show only document data by its ID:
+
+```json
+GET sample-1/_source/xCh2y3oBg4UTC8GCpQ3J
+```
+
+- Update a document by its ID:
+
+```json
+POST sample-1/_update/xCh2y3oBg4UTC8GCpQ3J
+{
+  "doc": {
+    "lastname": "Wilson",
+    "middleinitial": "D"
+  }
+}
+```
+
+- Update a document by its ID through script:
+
+```json
+POST sample-1/_update/xCh2y3oBg4UTC8GCpQ3J
+{
+  "script": {
+    "lang": "painless",
+    "source": "ctx._source.remove('middleinitial')"
+  }
+}
+```
+
+- Delete a document by its ID:
+
+```json
+DELETE sample-1/_doc/xCh2y3oBg4UTC8GCpQ3J
+```
+
+- Delete the **sample-1** index:
+
+```json
+DELETE sample-1
+```
