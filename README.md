@@ -702,3 +702,43 @@ PUT _template/logs
   "index_patterns": [ "logs-*" ]
 }
 ```
+
+## Dynamic Mapping
+
+- To create an index with dynamic mapping (also, it can be used in index template):
+
+```json
+PUT sample
+{
+  "mappings": {
+    "dynamic_templates": [
+      {
+        "strings_to_keyword": {
+          "match_mapping_type": "string",
+          "unmatch": "*_text",
+          "mapping": {
+            "type": "keyword"
+          }
+        }
+      },
+      {
+        "longs_to_integers": {
+          "match_mapping_type": "long",
+          "mapping": {
+            "type": "integer"
+          }
+        }
+      },
+      {
+        "strings_to_text": {
+          "match_mapping_type": "string",
+          "match": "*_text",
+          "mapping": {
+            "type": "text"
+          }
+        }
+      }
+    ]
+  }
+}
+```
