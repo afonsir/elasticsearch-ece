@@ -677,3 +677,28 @@ POST _aliases
 
 GET Henry_IV/_search
 ```
+
+## Index Template
+
+- To create an index template:
+
+```json
+PUT _template/logs
+{
+  "aliases": {
+    "logs_sample": {}
+  },
+  "mappings": {
+    "properties": {
+      "field_1": {
+        "type": "keyword"
+      }
+    }
+  },
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 1
+  },
+  "index_patterns": [ "logs-*" ]
+}
+```
