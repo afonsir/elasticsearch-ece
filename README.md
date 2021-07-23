@@ -624,3 +624,56 @@ POST /shakespeare/_refresh
 
 POST /logs/_refresh
 ```
+
+## Index Aliases
+
+- To create or delete an alias (or multiple):
+
+```json
+POST _aliases
+{
+  "actions": [
+    {
+      "add": {
+        "index": "bank",
+        "alias": "sample_data"
+      }
+    },
+    {
+      "add": {
+        "index": "logs",
+        "alias": "sample_data"
+      }
+    },
+    {
+      "add": {
+        "index": "shakespeare",
+        "alias": "sample_data"
+      }
+    }
+  ]
+}
+```
+
+- To create a filter alias:
+
+```json
+POST _aliases
+{
+  "actions": [
+    {
+      "add": {
+        "index": "shakespeare",
+        "alias": "Henry_IV",
+        "filter": {
+          "term": {
+            "play_name": "Henry IV"
+          }
+        }
+      }
+    }
+  ]
+}
+
+GET Henry_IV/_search
+```
