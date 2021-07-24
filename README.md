@@ -742,3 +742,75 @@ PUT sample
   }
 }
 ```
+
+## Remote Reindexing
+
+- Elasticsearch config:
+
+```yml
+# elasticsearch/config/elasticsearch.yml
+
+reindex.remote.whitelist: "<SOURCE_NODE_1_PRIVATE_ID>:9200, <SOURCE_NODE_2_PRIVATE_ID>:9200, ..."
+reindex.ssl.verification_mode: certificate
+reindex.ssl.truststore.type: PKCS12
+reindex.ssl.keystore.type: PKCS12
+reindex.ssl.truststore.path: certs/node-1
+reindex.ssl.keystore.path: certs/node-1
+```
+
+- Add pass-phrase to Elasticsearch keystore:
+
+```bash
+# keystore
+
+echo "CERTIFICATE_PASSWORD_HERE" | \
+/home/elastic/elasticsearch/bin/elasticsearch-keystore add --stdin \
+  reindex.ssl.keystore.secure_password
+
+# truststore
+
+echo "CERTIFICATE_PASSWORD_HERE" | \
+/home/elastic/elasticsearch/bin/elasticsearch-keystore add --stdin \
+  reindex.ssl.truststore.secure_password
+```
+
+- Restart Elasticsearch:
+
+```bash
+pkill --pidfile pid; ./bin/elasticsearch --daemonize --pidfile pid
+```
+
+- To remotly reindex:
+
+```json
+POST _reindex
+{
+  // source index (remote)
+  "source": {
+    "remote": {
+      // In this case, a remote cluster
+      "host": "https://<MASTER_NODE_PRIVATE_IP>:9200",
+      "username": "elastic",
+      "password": "..."
+    },
+    "index": "bank",
+    // query a subset of data
+    "query": {
+      "term": {
+        "gender.keyword": {
+          "value": "F"
+        }
+      }
+    }
+  },
+  // destination index (local)
+  "dest": {
+    "index": "accounts_female"
+  },
+  // mutate data in-transit
+  "script": {
+    "lang": "painless",
+    "source": "ctx._source.remove('gender')"
+  }
+}
+```
