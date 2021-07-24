@@ -814,3 +814,30 @@ POST _reindex
   }
 }
 ```
+
+## Update by Query
+
+- To update data by a given query:
+
+```json
+POST accounts/_update_by_query
+{
+  "query": {
+    "term": {
+      "gender.keyword": "F"
+    }
+  },
+  "script": {
+    "lang": "painless",
+    "source": """
+      ctx._source.balance *= 1.03;
+
+      if ( ctx._source.transactions == null ) {
+        ctx._source.transactions = 1;
+      } else {
+        ctx._source.transactions++;
+      }
+    """
+  }
+}
+```
