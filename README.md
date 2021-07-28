@@ -844,3 +844,60 @@ POST accounts/_update_by_query
   }
 }
 ```
+
+## Ingest Pipeline
+
+- To create a pipeline (it needs a node with **ingest** role):
+
+```json
+PUT _ingest/pipeline/test_pipeline
+{
+  "description": "Mutate some fields",
+  "processors": [
+    {
+      "remove": {
+        "field": "account_number"
+      }
+    },
+    {
+      "set": {
+        "field": "_source.fullname",
+        "value": "{{_source.firstname}} {{_source.lastname}}"
+      }
+    },
+    {
+      "convert": {
+        "field": "age",
+        "type": "string"
+      }
+    },
+    {
+      "script": {
+        "lang": "painless",
+        "source": """
+          if (ctx.gender == "M") {
+            ctx.gender = "male"
+          } else {
+            ctx.gender = "female"
+          }
+        """
+      }
+    }
+  ]
+}
+```
+
+- Execute the pipeline with a reindex:
+
+```json
+POST _reindex
+{
+  "source": {
+    "index": "accounts"
+  },
+  "dest": {
+    "index": "account_test",
+    "pipeline": "test_pipeline"
+  }
+}
+```
