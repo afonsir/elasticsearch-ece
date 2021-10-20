@@ -901,3 +901,118 @@ POST _reindex
   }
 }
 ```
+
+## Text Analyzer
+
+- Standard analyzer:
+
+```json
+POST _analyze
+{
+  "analyzer": "standard",
+  "text": "..."
+}
+```
+
+- English analyzer:
+
+```json
+POST _analyze
+{
+  "analyzer": "english",
+  "text": "..."
+}
+```
+
+- Custom analyzer:
+
+```json
+POST analysis-1
+{
+  "mappings": {
+    "properties": {
+      "text": {
+        "type": "text",
+        "analyzer": "whitespace_lowercase"
+      }
+    }
+  },
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "whitespace_lowercase": {
+          "tokenizer": "whitespace",
+          "filter": [ "lowercase" ]
+        }
+      }
+    }
+  }
+}
+
+POST analysis-2
+{
+  "mappings": {
+    "properties": {
+      "text": {
+        "type": "text",
+        "analyzer": "standard_emoji"
+      }
+    }
+  },
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "standard_emoji": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [ "lowercase", "english_stop" ],
+          "char_filter": [ "emoji" ]
+        }
+      },
+      "filter": {
+        "english_stop": {
+          "type": "stop",
+          "stopwords": "_english_"
+        }
+      },
+      "char_filter": {
+        "emoji": {
+          "type": "mapping",
+          "mappings": [
+            ":) => happy",
+            ":( => sad"
+          ]
+        }
+      }
+    }
+  }
+}
+```
+
+- Multi-Fields:
+
+```json
+PUT sample-1
+{
+  "mappings": {
+    "properties": {
+      "field_1": {
+        "type": "keyword",
+        "fields": {
+          "standard": {
+            "type": "text"
+          },
+          "simple": {
+            "type": "text",
+            "analyzer": "simple"
+          },
+          "english": {
+            "type": "text",
+            "analyzer": "english"
+          }
+        }
+      }
+    }
+  }
+}
+```
