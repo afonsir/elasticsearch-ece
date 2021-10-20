@@ -6,7 +6,7 @@
 sudo useradd elastic
 ```
 
-- Set the maximum number of open files for *elastic* user:
+- Set the maximum number of open files for _elastic_ user:
 
 ```bash
 # /etc/security/limits.conf
@@ -55,10 +55,10 @@ node.name: master-1
 node.attr.zone: 1
 
 # --- Network ---
-network.host: [ _local_, _site_ ]
+network.host: [_local_, _site_]
 
 # --- Discovery ---
-cluster.initial_master_nodes: [ "master-1" ]
+cluster.initial_master_nodes: ["master-1"]
 
 # --- Roles ---
 node.master: true
@@ -200,10 +200,10 @@ cluster.name: c2
 node.name: node-1
 
 # --- Network ---
-network.host: [ _local_, _site_ ]
+network.host: [_local_, _site_]
 
 # --- Discovery ---
-cluster.initial_master_nodes: [ "node-1" ]
+cluster.initial_master_nodes: ["node-1"]
 
 # --- Roles ---
 node.master: true
@@ -440,7 +440,7 @@ pkill --pidfile pid; ./bin/elasticsearch --daemonize --pidfile pid
 ```yml
 # kibana/config/kibana.yml
 
-elasticsearch.hosts: [ "https://localhost:9200" ]
+elasticsearch.hosts: ["https://localhost:9200"]
 elasticsearch.ssl.verificationMode: none
 ```
 
