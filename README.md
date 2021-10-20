@@ -1016,3 +1016,82 @@ PUT sample-1
   }
 }
 ```
+
+## Nested Array of Objects
+
+- Create a nested index:
+
+```json
+PUT nested_array-1
+{
+  "mappings": {
+    "properties": {
+      "instructors": {
+        "type": "nested"
+      }
+    }
+  }
+}
+```
+
+- Insert a document with a nested attribute:
+
+```json
+PUT nested_array-1/_doc/1
+{
+  "group": "LA Instructors",
+  "instructors": [
+    {
+      "firstname": "Myles",
+      "lastname": "Morales",
+      "email": "myles@mail.com"
+    },
+    {
+      "firstname": "Peter",
+      "lastname": "Parker",
+      "email": "peter@mail.com"
+    }
+  ]
+}
+```
+
+- Search by a nested attribute:
+
+```json
+GET nested_array-1/_search
+{
+  "query": {
+    "nested": {
+      "path": "instructors",
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "term": {
+                "instructors.firstname.keyword": {
+                  "value": "Myles"
+                }
+              }
+            },
+            {
+              "term": {
+                "instructors.lastname.keyword": {
+                  "value": "Morales"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "inner_hits": {
+        "highlight": {
+          "fields": {
+            "instructors.firstname.keyword": {}
+            , "instructors.lastname.keyword": {}
+          }
+        }
+      }
+    }
+  }
+}
+```
