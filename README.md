@@ -1095,3 +1095,48 @@ GET nested_array-1/_search
   }
 }
 ```
+
+## Parent/Child Relationship
+
+- Create a index with join relation:
+
+```json
+PUT parent_child-1
+{
+  "mappings": {
+    "properties": {
+      "qa": {
+        "type": "join",
+        "relations": {
+          "question": "answer"
+        }
+      }
+    }
+  }
+}
+```
+
+- Insert a parent document:
+
+```json
+PUT parent_child-1/_doc/1
+{
+  "text": "Which node type in Elasticsearch stores data?",
+  "qa": {
+    "name": "question"
+  }
+}
+```
+
+- Insert a child document:
+
+```json
+PUT parent_child-1/_doc/2?routing=1
+{
+  "text": "Data node",
+  "qa": {
+    "name": "answer",
+    "parent": "1"
+  }
+}
+```
